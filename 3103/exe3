@@ -1,0 +1,119 @@
+package com.exemplo.api.model;
+
+import javax.persistence.*;
+import java.util.List;
+
+@Entity
+public class Categoria {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    private String nome;
+
+    @OneToMany(mappedBy = "categoria", cascade = CascadeType.ALL)
+    private List<Questao> questoes;
+
+    // Getters e Setters
+}
+package com.exemplo.api.model;
+
+import javax.persistence.*;
+import java.util.List;
+
+@Entity
+public class Questao {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    private String texto;
+
+    @ManyToOne
+    @JoinColumn(name = "categoria_id")
+    private Categoria categoria;
+
+    @OneToMany(mappedBy = "questao", cascade = CascadeType.ALL)
+    private List<Opcao> opcoes;
+
+    // Getters e Setters
+}
+package com.exemplo.api.model;
+
+import javax.persistence.*;
+
+@Entity
+public class Opcao {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    private String texto;
+    private Boolean correta;
+
+    @ManyToOne
+    @JoinColumn(name = "questao_id")
+    private Questao questao;
+
+    // Getters e Setters
+}
+package com.exemplo.api.repository;
+
+import com.exemplo.api.model.Categoria;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface CategoriaRepository extends JpaRepository<Categoria, Long> {
+}
+package com.exemplo.api.repository;
+
+import com.exemplo.api.model.Questao;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface QuestaoRepository extends JpaRepository<Questao, Long> {
+}
+package com.exemplo.api.repository;
+
+import com.exemplo.api.model.Opcao;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface OpcaoRepository extends JpaRepository<Opcao, Long> {
+}
+package com.exemplo.api.controller;
+
+import com.exemplo.api.model.Categoria;
+import com.exemplo.api.repository.CategoriaRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/categorias")
+public class CategoriaController {
+
+    @Autowired
+    private CategoriaRepository categoriaRepository;
+
+    @GetMapping
+    public List<Categoria> listar() {
+        return categoriaRepository.findAll();
+    }
+
+    @GetMapping("/{id}")
+    public Categoria buscarPorId(@PathVariable Long id) {
+        return categoriaRepository.findById(id).orElse(null);
+    }
+
+    @PostMapping
+    public Categoria criar(@RequestBody Categoria categoria) {
+        return categoriaRepository.save(categoria);
+    }
+
+    @PutMapping("/{id}")
+    public Categoria atualizar(@PathVariable Long id, @RequestBody Categoria categoria) {
+        categoria.setId(id);
+        return categoriaRepository.save(categoria);
+    }
+
+    @DeleteMapping("/{id}")
+    public void deletar(@PathVariable Long id) {
+        categoriaRepository.deleteById(id);
+    }
+}
